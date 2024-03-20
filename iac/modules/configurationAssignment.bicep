@@ -50,6 +50,7 @@ resource assignment 'Microsoft.GuestConfiguration/guestConfigurationAssignments@
       version: version
       assignmentType: 'ApplyAndAutoCorrect'
       contentUri: '${storageAccount.properties.primaryEndpoints.blob}${configContainer.name}/${bundleName}?${storageAccount.listAccountSas('2021-04-01', sasProperties).accountSasToken}'
+      contentHash: '2BE17208753CAB389BB24C198F95C3BAB00069D3175E330CB2ECAB6D64EB22EC'
       configurationParameter: [
         {
           name: 'siteName'
