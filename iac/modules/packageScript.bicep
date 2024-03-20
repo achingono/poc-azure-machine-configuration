@@ -45,6 +45,10 @@ resource uploadScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     retentionInterval: 'PT1H'
     environmentVariables: [
       {
+        name: 'AZURE_RESOURCE_GROUP'
+        value: resourceGroup().name
+      }
+      {
         name: 'AZURE_STORAGE_ACCOUNT'
         value: storageAccount.name
       }
@@ -55,6 +59,10 @@ resource uploadScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       {
         name: 'AZURE_STORAGE_CONTAINER'
         value: configContainer.name
+      }
+      {
+        name: 'AZURE_STORAGE_BLOB'
+        value: '${configurationName}${empty(version) ? '' : '-v${version}'}.zip'
       }
       {
         name: 'MODULE_CONTENT'
