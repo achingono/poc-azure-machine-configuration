@@ -17,6 +17,10 @@ param (
 $artifactsPath = "$PSScriptRoot\artifacts";
 $webDeployPackage = "$artifactsPath\WebDeploy.zip";
 $webDeployBlob = "WebDeploy.zip";
+$configurationPackage = "$artifactsPath\ServerConfiguration.zip";
+$configurationBlob = "ServerConfiguration.zip";
+$deploymentContainerName = "deployments";
+$configurationsContainerName = "configurations";
 
 # Import the Az module
 Import-Module Az.Resources;
@@ -38,22 +42,37 @@ if ($null -eq $storageAccount) {
 }
 
 # create storage container if it does not exist
-$storageContainer = Get-AzStorageContainer -Name "deployments" -Context $storageAccount.Context -ErrorAction SilentlyContinue;
-if ($null -eq $storageContainer) {
+$deploymentsContainer = Get-AzStorageContainer -Name $deploymentContainerName -Context $storageAccount.Context -ErrorAction SilentlyContinue;
+if ($null -eq $deploymentsContainer) {
     # Create storage container
-    New-AzStorageContainer -Name "deployments" -Context $storageAccount.Context;
+    New-AzStorageContainer -Name $deploymentContainerName -Context $storageAccount.Context;
+}
+
+# create storage container if it does not exist
+$configurationsContainer = Get-AzStorageContainer -Name $configurationsContainerName -Context $storageAccount.Context -ErrorAction SilentlyContinue;
+if ($null -eq $configurationsContainer) {
+    # Create storage container
+    New-AzStorageContainer -Name $configurationsContainerName -Context $storageAccount.Context;
 }
 
 # append version if provided
 if ($null -ne $version -and $version -ne "") {
     $webDeployBlob = "WebDeploy-v${version}.zip";
+    $configurationBlob = "ServerConfiguration-v${version}.zip";
 }
 
-# Check if it does not exist
-$webDeployBlobExists = Get-AzStorageBlob -Container "deployments" -Blob $webDeployBlob -Context $storageAccount.Context -ErrorAction SilentlyContinue;
+# Check if blob exists
+$webDeployBlobExists = Get-AzStorageBlob -Container $deploymentContainerName -Blob $webDeployBlob -Context $storageAccount.Context -ErrorAction SilentlyContinue;
 if ($null -eq $webDeployBlobExists) {
     # Upload WebDeploy package
-    Set-AzStorageBlobContent -File $webDeployPackage -Container "deployments" -Blob $webDeployBlob -Context $storageAccount.Context -Force;
+    Set-AzStorageBlobContent -File $webDeployPackage -Container $deploymentContainerName -Blob $webDeployBlob -Context $storageAccount.Context -Force;
+}
+
+# Check if blob exists
+$configurationBlobExists = Get-AzStorageBlob -Container $configurationsContainerName -Blob $configurationBlob -Context $storageAccount.Context -ErrorAction SilentlyContinue;
+if ($null -eq $configurationBlobExists) {
+    # Upload ServerConfiguration package
+    Set-AzStorageBlobContent -File $configurationPackage -Container $configurationsContainerName -Blob $configurationBlob -Context $storageAccount.Context -Force;
 }
 
 # Deploy the Bicep template

@@ -116,7 +116,7 @@ module share 'modules/storageFile.bicep' = {
     shareName: name
   }
 }
-
+/*
 module packageScript 'modules/packageScript.bicep' = {
   name: '${deployment().name}--uploadScript'
   scope: resourceGroup
@@ -131,7 +131,7 @@ module packageScript 'modules/packageScript.bicep' = {
     validationKey: validationKey
   }
 }
-
+*/
 module configurationExtension 'modules/configurationExtension.bicep' = {
   scope: resourceGroup
   name: '${deployment().name}--configurationExtension'
@@ -140,7 +140,7 @@ module configurationExtension 'modules/configurationExtension.bicep' = {
   ]
   params: {
     location: location
-    name: name
+    name: resourceName
   }
 }
 
@@ -148,7 +148,6 @@ module configurationAssignment 'modules/configurationAssignment.bicep' = {
   name: '${deployment().name}--configurationAssignment'
   scope: resourceGroup
   dependsOn: [
-    packageScript
     configurationExtension
   ]
   params: {
