@@ -121,7 +121,7 @@ module packageScript 'modules/packageScript.bicep' = {
   name: '${deployment().name}--uploadScript'
   scope: resourceGroup
   dependsOn: [
-    storage
+    blob
   ]
   params: {
     name: resourceName
@@ -132,9 +132,12 @@ module packageScript 'modules/packageScript.bicep' = {
   }
 }
 
-module configuratioExtension 'modules/configurationExtension.bicep' = {
+module configurationExtension 'modules/configurationExtension.bicep' = {
   scope: resourceGroup
   name: '${deployment().name}--configurationExtension'
+  dependsOn: [
+    virtualMachine
+  ]
   params: {
     location: location
     name: name
@@ -145,8 +148,8 @@ module configurationAssignment 'modules/configurationAssignment.bicep' = {
   name: '${deployment().name}--configurationAssignment'
   scope: resourceGroup
   dependsOn: [
-    virtualMachine
     packageScript
+    configurationExtension
   ]
   params: {
     name: resourceName
