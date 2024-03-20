@@ -33,8 +33,8 @@ module publicIPAddress 'modules/publicIPAddress.bicep' = {
   }
 }
 
-module virtualNetwork 'modules/virtualNetwork.bicep' = {
-  name: '${deployment().name}--virtualNetwork'
+module networkSecurityGroup 'modules/networkSecurityGroup.bicep' = {
+  name: '${deployment().name}--networkSecurityGroup'
   scope: resourceGroup
   params:{
     name: resourceName
@@ -42,9 +42,12 @@ module virtualNetwork 'modules/virtualNetwork.bicep' = {
   }
 }
 
-module networkSecurityGroup 'modules/networkSecurityGroup.bicep' = {
-  name: '${deployment().name}--networkSecurityGroup'
+module virtualNetwork 'modules/virtualNetwork.bicep' = {
+  name: '${deployment().name}--virtualNetwork'
   scope: resourceGroup
+  dependsOn: [
+    networkSecurityGroup
+  ]
   params:{
     name: resourceName
     location: resourceGroup.location

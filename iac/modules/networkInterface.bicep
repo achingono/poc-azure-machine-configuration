@@ -11,10 +11,6 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-11-01' existing 
   name: 'vnet-${name}'
 }
 
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-11-01' existing = {
-  name: 'nsg-${name}'
-}
-
 resource networkInterface 'Microsoft.Network/networkInterfaces@2022-05-01' = {
   name: 'nic-${name}'
   location: location
@@ -42,8 +38,5 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2022-05-01' = {
         }
       }
     ]
-    networkSecurityGroup: {
-      id: networkSecurityGroup.id
-    }
   }
 }
