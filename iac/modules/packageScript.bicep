@@ -40,7 +40,7 @@ resource uploadScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   location: location
   kind:'AzurePowerShell'
   properties: {
-    azPowerShellVersion: '11.3'
+    azPowerShellVersion: '11.0'
     timeout: 'PT5M'
     retentionInterval: 'PT1H'
     environmentVariables: [
