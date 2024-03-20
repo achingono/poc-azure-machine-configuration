@@ -127,6 +127,8 @@ module packageScript 'modules/packageScript.bicep' = {
     name: resourceName
     location: location
     version: version
+    decryptionKey: decryptionKey
+    validationKey: validationKey
   }
 }
 
