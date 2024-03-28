@@ -31,7 +31,7 @@ $resourceGroupName = "rg-$name-$code-$location";
 $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue;
 if ($null -eq $resourceGroup) {
     # Create resources group
-    New-AzResourceGroup -Name $resourceGroupName -Location $location;
+    $resourceGroup = New-AzResourceGroup -Name $resourceGroupName -Location $location;
 }
 
 # check if storage account exists
@@ -87,3 +87,35 @@ New-AzDeployment -Name $name -Location $location -TemplateFile "./iac/main.bicep
         "decryptionKey" = '18F665CA29B4911B0C1755979C15F40466237BC9A101836A5AC6D1CE85D6B022';
         "validationKey" = '1E3D5BABF386E7A89DAE461DF2FA228734680C61';
     };
+
+# Get the package url with SAS token
+$configurationBlobUrl = (Get-AzStorageBlob -Container $configurationsContainerName `
+                                -Blob $configurationBlob `
+                                -Context $storageAccount.Context
+                        ).ICloudBlob.Uri.AbsoluteUri + (Get-AzStorageBlobContent -Container $configurationsContainerName `
+                                -Blob $configurationBlob `
+                                -Context $storageAccount.Context).ICloudBlob.GetSharedAccessSignature((New-AzStorageBlobSASToken -Permission r -ExpiryTime (Get-Date).AddYears(1) -Context $storageAccount.Context).SASToken);
+
+# Create the configuration policy
+# https://learn.microsoft.com/en-us/azure/governance/machine-configuration/how-to/create-policy-definition
+$configurationPolicy = New-GuestConfigurationPolicy -PolicyId $(New-Guid) `
+    -ContentUri $configurationBlobUrl `
+    -DisplayName "Server Configuration Policy" `
+    -Description 'Deploy Server Configuration'  `
+    -Path './policies/' `
+    -Platform 'Windows' `
+    -Mode 'ApplyAndAutoCorrect' `
+    -PolicyVersion $version;  
+
+# Create the policy definition
+$policyDefinition = New-AzPolicyDefinition -Name 'Server Configuration Policy Definition' -Policy './policies/ServerConfiguration_DeployIfNotExists.json';
+
+# Assign the policy
+# https://learn.microsoft.com/en-us/azure/governance/policy/assign-policy-powershell
+$policyAssignment = New-AzPolicyAssignment -Name 'Server Configuration Policy Assignment' `
+    -DisplayName 'Server Configuration Policy Assignment' `
+    -PolicyDefinition $policyDefinition `
+    -Scope $resourceGroup.ResourceId `
+    -PolicySetDefinition 'GuestConfiguration' `
+    -IdentityType 'SystemAssigned' `
+    -Location $location;
